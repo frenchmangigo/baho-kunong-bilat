@@ -1,69 +1,52 @@
 const axios = require("axios");
+
 module.exports = {
 	config: {
 		name: 'blackbox',
-		version: '2.1.0',
+		version: '1.0.0',
 		author: 'KENLIEPLAYS',
 		countDown: 5,
 		role: 0,
-		shortDescription: 'Blackbox by Kenlie Navacilla Jugarap',
-		longDescription: {
-			en: 'Blackbox by Kenlie Navacilla Jugarap'
-		},
+		shortDescription: 'Use Blackbox AI',
+		longDescription: 'Ask anything to Blackbox AI by providing a prompt.',
 		category: 'ai',
 		guide: {
-			en: '   {pn} <word>: ask with Blackbox'
-				+ '\n   Example:{pn} hi'
+			en: '   {pn} <message>: Ask Blackbox AI with a message.'
+				+ '\n   Example: {pn} "hello world"'
 		}
 	},
 
 	langs: {
 		en: {
 			chatting: 'Please wait...',
-			error: 'If this report spam please contact Kenlie Navacilla Jugarap'
+			error: 'An error occurred. Please contact Kenlie Navacilla Jugarap.'
 		}
 	},
 
-	onStart: async function ({ args, message, event, getLang }) {
-		if (args[0]) {
-			const yourMessage = args.join(" ");
-			try {
-				const responseMessage = await getMessage(yourMessage);
-				return message.reply(`${responseMessage}`);
-			}
-			catch (err) {
-				console.log(err)
-				return message.reply(getLang("error"));
-			}
+	onStart: async function ({ args, message, getLang }) {
+		// Check if a message was provided
+		if (!args.length) {
+			return message.reply("Please provide a message to ask Blackbox AI.");
 		}
-	},
+		
+		const userMessage = args.join(" "); // Combine all arguments into one string
+		message.reply(getLang('chatting')); // Notify user to wait while processing
 
-	onChat: async ({ args, message, threadsData, event, isUserCallCommand, getLang }) => {
-		if (!isUserCallCommand) {
-			return;
-		}
-		if (args.length > 1) {
-			try {
-				const langCode = await threadsData.get(event.threadID, "settings.lang") || global.GoatBot.config.language;
-				const responseMessage = await getMessage(args.join(" "), langCode);
-				return message.reply(`${responseMessage}`);
+		try {
+			// Make the API call
+			const response = await axios.get(`https://deku-rest-api-3jvu.onrender.com/blackbox?prompt=${encodeURIComponent(userMessage)}`);
+			
+			// Check if the API response contains the expected data
+			if (response.data && response.data.response) {
+				return message.reply(response.data.response); // Send the response from the API
+			} else {
+				// If no response, handle it
+				throw new Error("No response field in API result.");
 			}
-			catch (err) {
-				return message.reply(getLang("error"));
-			}
+		} catch (error) {
+			// Log the error and notify the user
+			console.error("Error:", error);
+			return message.reply(getLang('error'));
 		}
 	}
 };
-
-async function getMessage(yourMessage, langCode) {
-	try {
-		const res = await axios.get(`https://deku-rest-api-3jvu.onrender.com/api/blackboxai?q=${yourMessage}&uid=100`);
-		if (!res.data.response) {
-			throw new Error('Please contact Kenlie Navacilla Jugarap if this error spams...');
-		}
-		return res.data.response;
-	} catch (err) {
-		console.error('Error while getting a message:', err);
-		throw err;
-	}
-}

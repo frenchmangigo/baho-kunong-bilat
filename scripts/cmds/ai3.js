@@ -73,7 +73,7 @@ module.exports = {
         name: 'ai3',
         author: 'cttro',
         role: 0,
-        category: 'ai',
+        category: 'ai3',
         shortDescription: 'AI to answer any question',
     },
     onStart: async function ({ api, event, args }) {
@@ -91,8 +91,8 @@ module.exports = {
         const messageContent = event.body.trim().toLowerCase();
  
         // Check if the message is a reply to the bot's message or starts with "ai"
-        if ((event.messageReply && event.messageReply.senderID === api.getCurrentUserID()) || (messageContent.startsWith("ai") && event.senderID !== api.getCurrentUserID())) {
-            const input = messageContent.replace(/^ai\s*/, "").trim();
+        if ((event.messageReply && event.messageReply.senderID === api.getCurrentUserID()) || (messageContent.startsWith("ai3") && event.senderID !== api.getCurrentUserID())) {
+            const input = messageContent.replace(/^ai3\s*/, "").trim();
             try {
                 const { response, messageID } = await getAIResponse(input, event.senderID, event.messageID);
                 lastResponseMessageID = messageID;
